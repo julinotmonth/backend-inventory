@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 
 class Product {
   // Get all products
-  static getAll({ search, category_id, is_active = 1, limit = 100, offset = 0 } = {}) {
+  static getAll({ search, category_id, user_id, is_active = 1, limit = 100, offset = 0 } = {}) {
     const db = getDatabase();
     let query = `
       SELECT 
@@ -17,6 +17,12 @@ class Product {
       WHERE p.is_active = ?
     `;
     const params = [is_active];
+
+    // Filter by user_id if provided
+    if (user_id) {
+      query += ` AND p.user_id = ?`;
+      params.push(user_id);
+    }
 
     if (search) {
       query += ` AND (p.name LIKE ? OR p.sku LIKE ? OR p.barcode LIKE ?)`;
@@ -93,10 +99,10 @@ class Product {
 
     const query = `
       INSERT INTO products (
-        id, name, description, sku, barcode, category_id, supplier_id,
+        id, name, description, sku, barcode, category_id, supplier_id, user_id,
         price, cost_price, quantity, min_stock, unit, location, image_url,
         is_active, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     db.run(query, [
@@ -107,6 +113,7 @@ class Product {
       data.barcode || null,
       data.category_id || null,
       data.supplier_id || null,
+      data.user_id || null,
       data.price || 0,
       data.cost_price || null,
       data.quantity || 0,
@@ -228,9 +235,9 @@ class Product {
   }
 
   // Get low stock products
-  static getLowStock() {
+  static getLowStock(user_id = null) {
     const db = getDatabase();
-    const query = `
+    let query = `
       SELECT 
         p.*,
         c.name as category_name
@@ -239,9 +246,20 @@ class Product {
       WHERE p.is_active = 1 
       AND p.quantity <= p.min_stock 
       AND p.min_stock > 0
-      ORDER BY p.quantity ASC
     `;
+    const params = [];
+    
+    if (user_id) {
+      query += ` AND p.user_id = ?`;
+      params.push(user_id);
+    }
+    
+    query += ` ORDER BY p.quantity ASC`;
+    
     const stmt = db.prepare(query);
+    if (params.length > 0) {
+      stmt.bind(params);
+    }
     
     const results = [];
     while (stmt.step()) {
@@ -253,9 +271,9 @@ class Product {
   }
 
   // Get out of stock products
-  static getOutOfStock() {
+  static getOutOfStock(user_id = null) {
     const db = getDatabase();
-    const query = `
+    let query = `
       SELECT 
         p.*,
         c.name as category_name
@@ -263,7 +281,17 @@ class Product {
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.is_active = 1 AND p.quantity <= 0
     `;
+    const params = [];
+    
+    if (user_id) {
+      query += ` AND p.user_id = ?`;
+      params.push(user_id);
+    }
+    
     const stmt = db.prepare(query);
+    if (params.length > 0) {
+      stmt.bind(params);
+    }
     
     const results = [];
     while (stmt.step()) {
@@ -275,9 +303,9 @@ class Product {
   }
 
   // Get inventory statistics
-  static getStats() {
+  static getStats(user_id = null) {
     const db = getDatabase();
-    const query = `
+    let query = `
       SELECT 
         COUNT(*) as total_products,
         COALESCE(SUM(quantity), 0) as total_quantity,
@@ -287,7 +315,17 @@ class Product {
       FROM products
       WHERE is_active = 1
     `;
+    const params = [];
+    
+    if (user_id) {
+      query += ` AND user_id = ?`;
+      params.push(user_id);
+    }
+    
     const stmt = db.prepare(query);
+    if (params.length > 0) {
+      stmt.bind(params);
+    }
     
     let result = null;
     if (stmt.step()) {

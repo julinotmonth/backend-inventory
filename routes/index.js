@@ -22,59 +22,59 @@ router.put('/auth/profile', auth, authController.updateProfile);
 router.put('/auth/password', auth, authController.changePassword);
 
 // =============================================
-// PRODUCT ROUTES
+// PRODUCT ROUTES (Require Authentication)
 // =============================================
-router.get('/products', optionalAuth, productController.getAll);
-router.get('/products/stats', optionalAuth, productController.getStats);
-router.get('/products/low-stock', optionalAuth, productController.getLowStock);
-router.get('/products/out-of-stock', optionalAuth, productController.getOutOfStock);
-router.get('/products/barcode/:barcode', optionalAuth, productController.getByBarcode);
-router.get('/products/:id', optionalAuth, productController.getById);
-router.post('/products', optionalAuth, productController.create);
-router.put('/products/:id', optionalAuth, productController.update);
-router.delete('/products/:id', optionalAuth, productController.delete);
-router.post('/products/:id/stock', optionalAuth, productController.updateStock);
+router.get('/products', auth, productController.getAll);
+router.get('/products/stats', auth, productController.getStats);
+router.get('/products/low-stock', auth, productController.getLowStock);
+router.get('/products/out-of-stock', auth, productController.getOutOfStock);
+router.get('/products/barcode/:barcode', auth, productController.getByBarcode);
+router.get('/products/:id', auth, productController.getById);
+router.post('/products', auth, productController.create);
+router.put('/products/:id', auth, productController.update);
+router.delete('/products/:id', auth, productController.delete);
+router.post('/products/:id/stock', auth, productController.updateStock);
 
 // =============================================
-// CATEGORY ROUTES
+// CATEGORY ROUTES (Require Authentication)
 // =============================================
-router.get('/categories', optionalAuth, categoryController.getAll);
-router.get('/categories/:id', optionalAuth, categoryController.getById);
-router.post('/categories', optionalAuth, categoryController.create);
-router.put('/categories/:id', optionalAuth, categoryController.update);
-router.delete('/categories/:id', optionalAuth, categoryController.delete);
+router.get('/categories', auth, categoryController.getAll);
+router.get('/categories/:id', auth, categoryController.getById);
+router.post('/categories', auth, categoryController.create);
+router.put('/categories/:id', auth, categoryController.update);
+router.delete('/categories/:id', auth, categoryController.delete);
 
 // =============================================
-// SUPPLIER ROUTES
+// SUPPLIER ROUTES (Require Authentication)
 // =============================================
-router.get('/suppliers', optionalAuth, supplierController.getAll);
-router.get('/suppliers/:id', optionalAuth, supplierController.getById);
-router.post('/suppliers', optionalAuth, supplierController.create);
-router.put('/suppliers/:id', optionalAuth, supplierController.update);
-router.delete('/suppliers/:id', optionalAuth, supplierController.delete);
+router.get('/suppliers', auth, supplierController.getAll);
+router.get('/suppliers/:id', auth, supplierController.getById);
+router.post('/suppliers', auth, supplierController.create);
+router.put('/suppliers/:id', auth, supplierController.update);
+router.delete('/suppliers/:id', auth, supplierController.delete);
 
 // =============================================
-// TRANSACTION ROUTES
+// TRANSACTION ROUTES (Require Authentication)
 // =============================================
-router.get('/transactions', optionalAuth, transactionController.getAll);
-router.get('/transactions/recent', optionalAuth, transactionController.getRecent);
-router.get('/transactions/summary', optionalAuth, transactionController.getSummary);
-router.get('/transactions/date-range', optionalAuth, transactionController.getByDateRange);
-router.get('/transactions/product/:productId', optionalAuth, transactionController.getByProduct);
-router.get('/transactions/:id', optionalAuth, transactionController.getById);
+router.get('/transactions', auth, transactionController.getAll);
+router.get('/transactions/recent', auth, transactionController.getRecent);
+router.get('/transactions/summary', auth, transactionController.getSummary);
+router.get('/transactions/date-range', auth, transactionController.getByDateRange);
+router.get('/transactions/product/:productId', auth, transactionController.getByProduct);
+router.get('/transactions/:id', auth, transactionController.getById);
 
 // =============================================
-// RETURN ROUTES
+// RETURN ROUTES (Require Authentication)
 // =============================================
-router.get('/returns', optionalAuth, returnController.getAll);
-router.get('/returns/recent', optionalAuth, returnController.getRecent);
-router.get('/returns/stats', optionalAuth, returnController.getStats);
-router.get('/returns/product/:productId', optionalAuth, returnController.getByProduct);
-router.get('/returns/:id', optionalAuth, returnController.getById);
-router.post('/returns', optionalAuth, returnController.create);
-router.put('/returns/:id', optionalAuth, returnController.update);
-router.post('/returns/:id/process', optionalAuth, returnController.process);
-router.delete('/returns/:id', optionalAuth, returnController.delete);
+router.get('/returns', auth, returnController.getAll);
+router.get('/returns/recent', auth, returnController.getRecent);
+router.get('/returns/stats', auth, returnController.getStats);
+router.get('/returns/product/:productId', auth, returnController.getByProduct);
+router.get('/returns/:id', auth, returnController.getById);
+router.post('/returns', auth, returnController.create);
+router.put('/returns/:id', auth, returnController.update);
+router.post('/returns/:id/process', auth, returnController.process);
+router.delete('/returns/:id', auth, returnController.delete);
 
 // =============================================
 // HEALTH CHECK

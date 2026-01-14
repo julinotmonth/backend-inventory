@@ -80,10 +80,11 @@ async function startServer() {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         description TEXT,
-        sku TEXT UNIQUE,
+        sku TEXT,
         barcode TEXT,
         category_id TEXT,
         supplier_id TEXT,
+        user_id TEXT,
         price REAL NOT NULL DEFAULT 0,
         cost_price REAL,
         quantity INTEGER NOT NULL DEFAULT 0,
@@ -93,9 +94,17 @@ async function startServer() {
         image_url TEXT,
         is_active INTEGER DEFAULT 1,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
+    
+    // Add user_id column if not exists (for existing databases)
+    try {
+      db.run(`ALTER TABLE products ADD COLUMN user_id TEXT`);
+    } catch (e) {
+      // Column already exists
+    }
 
     db.run(`
       CREATE TABLE IF NOT EXISTS stock_transactions (

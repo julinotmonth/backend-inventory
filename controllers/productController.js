@@ -4,9 +4,12 @@ const Product = require('../models/Product');
 exports.getAll = (req, res) => {
   try {
     const { search, category_id, limit, offset } = req.query;
+    const user_id = req.user?.id; // Get user_id from authenticated user
+    
     const products = Product.getAll({
       search,
       category_id,
+      user_id, // Filter by user
       limit: parseInt(limit) || 100,
       offset: parseInt(offset) || 0
     });
@@ -51,7 +54,13 @@ exports.getById = (req, res) => {
 // Create product
 exports.create = (req, res) => {
   try {
-    const product = Product.create(req.body);
+    // Add user_id from authenticated user
+    const productData = {
+      ...req.body,
+      user_id: req.user?.id || null
+    };
+    
+    const product = Product.create(productData);
 
     res.status(201).json({
       success: true,
@@ -170,7 +179,8 @@ exports.updateStock = (req, res) => {
 // Get low stock products
 exports.getLowStock = (req, res) => {
   try {
-    const products = Product.getLowStock();
+    const user_id = req.user?.id;
+    const products = Product.getLowStock(user_id);
 
     res.json({
       success: true,
@@ -188,7 +198,8 @@ exports.getLowStock = (req, res) => {
 // Get out of stock products
 exports.getOutOfStock = (req, res) => {
   try {
-    const products = Product.getOutOfStock();
+    const user_id = req.user?.id;
+    const products = Product.getOutOfStock(user_id);
 
     res.json({
       success: true,
@@ -206,7 +217,8 @@ exports.getOutOfStock = (req, res) => {
 // Get inventory statistics
 exports.getStats = (req, res) => {
   try {
-    const stats = Product.getStats();
+    const user_id = req.user?.id;
+    const stats = Product.getStats(user_id);
 
     res.json({
       success: true,
