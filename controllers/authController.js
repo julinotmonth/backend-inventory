@@ -150,11 +150,65 @@ exports.updateProfile = (req, res) => {
   try {
     const { name, email, avatar_url } = req.body;
     
-    const user = User.update(req.user.id, {
-      name,
-      email,
-      avatar_url
-    });
+    // Check if at least one field is provided (avatar_url can be empty string to clear)
+    const hasName = name !== undefined && name !== null && name !== '';
+    const hasEmail = email !== undefined && email !== null && email !== '';
+    const hasAvatar = avatar_url !== undefined; // Can be empty string to clear
+    
+    if (!hasName && !hasEmail && !hasAvatar) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one field (name, email, or avatar_url) is required'
+      });
+    }
+
+    // Validate name if provided
+    if (hasName) {
+      if (typeof name !== 'string' || name.trim().length < 3) {
+        return res.status(400).json({
+          success: false,
+          message: 'Name must be at least 3 characters'
+        });
+      }
+    }
+
+    // Validate email if provided
+    if (hasEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid email format'
+        });
+      }
+
+      // Check if email already used by another user
+      const existingUser = User.getByEmail(email);
+      if (existingUser && existingUser.id !== req.user.id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email already used by another account'
+        });
+      }
+    }
+
+    // Build update data object
+    const updateData = {};
+    if (hasName) updateData.name = name.trim();
+    if (hasEmail) updateData.email = email.trim().toLowerCase();
+    if (hasAvatar) {
+      // If avatar_url is empty string or null, set to null to clear it
+      updateData.avatar_url = avatar_url === '' ? null : avatar_url;
+    }
+
+    const user = User.update(req.user.id, updateData);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
     res.json({
       success: true,
@@ -162,9 +216,10 @@ exports.updateProfile = (req, res) => {
       data: user
     });
   } catch (error) {
+    console.error('Update profile error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || 'Failed to update profile'
     });
   }
 };
@@ -181,7 +236,22 @@ exports.changePassword = (req, res) => {
       });
     }
 
+    if (new_password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters'
+      });
+    }
+
     const user = User.getByEmail(req.user.email);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
     const isValidPassword = User.verifyPassword(current_password, user.password);
 
     if (!isValidPassword) {
@@ -198,9 +268,10 @@ exports.changePassword = (req, res) => {
       message: 'Password changed successfully'
     });
   } catch (error) {
+    console.error('Change password error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || 'Failed to change password'
     });
   }
 };
